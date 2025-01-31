@@ -19,6 +19,7 @@ func New(ctx context.Context) *cobra.Command {
 		createAccountCMD(ctx),
 		createTokenCMD(ctx),
 		accountInfoCMD(ctx),
+		transferSOLCMD(ctx),
 	)
 
 	return cmd
