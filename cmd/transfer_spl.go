@@ -11,19 +11,20 @@ import (
 	"github.com/kirill-a-belov/solana_token_manager/pkg/tracer"
 )
 
-func transferSOLCMD(ctx context.Context) *cobra.Command {
-	span, _ := tracer.Start(ctx, "cmd.transferSOLCMD")
+func transferSPLCMD(ctx context.Context) *cobra.Command {
+	span, _ := tracer.Start(ctx, "cmd.transferSPLCMD")
 	defer span.Done()
 
 	var (
 		ownerKeyFilename string
-		amountLamports   uint64
+		amountTokens     uint64
 		toAddress        string
+		tokenMint        string
 	)
 
 	cmd := &cobra.Command{
-		Use:   "transfer_sol",
-		Short: "Transfer SOL to account",
+		Use:   "transfer_spl",
+		Short: "Transfer SOL token to account",
 		Run: func(cmd *cobra.Command, args []string) {
 			ctx = context.Background()
 
@@ -32,7 +33,7 @@ func transferSOLCMD(ctx context.Context) *cobra.Command {
 				log.Fatalln(err)
 			}
 
-			fmt.Printf("Transfer %v SOL to %s ARE YOU SURE? (type \"yes\")\n", float64(amountLamports)/1000000000, toAddress)
+			fmt.Printf("Transfer %v SPL to %s ARE YOU SURE? (type \"yes\")\n", amountTokens, toAddress)
 			var check string
 			fmt.Scanln(&check)
 			if check != "yes" {
@@ -40,10 +41,11 @@ func transferSOLCMD(ctx context.Context) *cobra.Command {
 				return
 			}
 
-			if err = m.TransferSOL(ctx, &solana.TransferSOLRequest{
+			if err = m.TransferSPLToken(ctx, &solana.TransferSPLTokenRequest{
 				OwnerKeyFilename: ownerKeyFilename,
-				AmountLamports:   amountLamports,
 				TargetAddress:    toAddress,
+				Amount:           amountTokens,
+				TokenMint:        tokenMint,
 			}); err != nil {
 				log.Fatalln(err)
 			}
@@ -53,10 +55,13 @@ func transferSOLCMD(ctx context.Context) *cobra.Command {
 	cmd.Flags().StringVar(&ownerKeyFilename, "owner-key-file", "", "Enter name for a file with owner account key details")
 	cmd.MarkFlagRequired("owner-key-file")
 
-	cmd.Flags().Uint64Var(&amountLamports, "amount-lamports", 0, "Enter amount Lamports for the transfer")
-	cmd.MarkFlagRequired("amount-lamports")
+	cmd.Flags().Uint64Var(&amountTokens, "amount-tokens", 0, "Enter amount for an initial supply token")
+	cmd.MarkFlagRequired("amount-tokens")
 
-	cmd.Flags().StringVar(&toAddress, "to-address", "", "Recipient address for the transfer")
+	cmd.Flags().StringVar(&toAddress, "to-address", "", "Recipient address")
+	cmd.MarkFlagRequired("to-address")
+
+	cmd.Flags().StringVar(&tokenMint, "token-mint", "", "Token mint")
 	cmd.MarkFlagRequired("to-address")
 
 	return cmd

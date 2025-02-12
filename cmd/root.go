@@ -20,6 +20,7 @@ func New(ctx context.Context) *cobra.Command {
 		createTokenCMD(ctx),
 		accountInfoCMD(ctx),
 		transferSOLCMD(ctx),
+		transferSPLCMD(ctx),
 	)
 
 	return cmd
